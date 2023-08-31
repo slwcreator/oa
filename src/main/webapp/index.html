@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OA 办公系统</title>
+
+    <link rel="stylesheet" href="/assets/element-plus/index.css">
+    <script src="/assets/vue/vue.global.js"></script>
+    <script src="/assets/element-plus/index.full.js"></script>
+    <script src="/assets/axios/axios.js"></script>
+    <style>
+        .el-header {
+            background-color: rgb(238, 241, 246);
+            color: #333;
+            line-height: 60px;
+        }
+
+        html, body, #app, .el-container {
+            padding: 0px;
+            margin: 0px;
+            height: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <el-container style="height: 100%;border: 1px solid #eee">
+        <el-header>
+            Header
+        </el-header>
+        <el-container>
+            <el-aside width="200px" style="max-height: 100%;background-color: rgb(238,241,246)">
+                Aside
+            </el-aside>
+            <el-main>
+                <iframe id="main" name="main" src="https://www.baidu.com" style="width: 100%;height: 95%;border: 0px">
+
+                </iframe>
+            </el-main>
+        </el-container>
+    </el-container>
+</div>
+<script>
+    const Main = {
+        data() {
+            return {}
+        }
+    }
+
+    const app = Vue.createApp(Main);
+    app.use(ElementPlus);
+    app.mount("#app");
+</script>
+</body>
+</html>
