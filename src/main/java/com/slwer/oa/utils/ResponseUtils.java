@@ -12,6 +12,7 @@ public class ResponseUtils {
     private String message;
     private Map<String, Object> data = new HashMap<>();
 
+    // 0 代表处理成功，非 0 代表处理失败
     public ResponseUtils() {
         this.code = "0";
         this.message = "success";

@@ -1,9 +1,8 @@
 package com.slwer.oa.controller;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.slwer.oa.entity.User;
 import com.slwer.oa.service.UserService;
+import com.slwer.oa.utils.ResponseUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -11,8 +10,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @WebServlet("/api/login")
 public class LoginServlet extends HttpServlet {
@@ -30,25 +27,14 @@ public class LoginServlet extends HttpServlet {
 
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-        Map<String, Object> result = new LinkedHashMap<>();
+        ResponseUtils resp;
         try {
             User user = userService.checkLogin(username, password);
-
-            // 0 代表处理成功，非 0 代表处理失败
-            result.put("code", "0");
-            result.put("message", "success");
-            Map<String, Object> data = new LinkedHashMap<>();
-            data.put("user", user);
-            result.put("data", data);
+            resp = new ResponseUtils().put("user", user);
         } catch (Exception e) {
             e.printStackTrace();
-            result.put("code", e.getClass().getSimpleName());
-            result.put("message", e.getMessage());
+            resp = new ResponseUtils(e.getClass().getSimpleName(), e.getMessage());
         }
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        String json = objectMapper.writeValueAsString(result);
-        response.getWriter().println(json);
+        response.getWriter().println(resp.toJsonString());
     }
 }
