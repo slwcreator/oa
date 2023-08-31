@@ -30,6 +30,8 @@ public class LoginServlet extends HttpServlet {
         ResponseUtils resp;
         try {
             User user = userService.checkLogin(username, password);
+            user.setPassword(null);
+            user.setSalt(null);
             resp = new ResponseUtils().put("user", user);
         } catch (Exception e) {
             e.printStackTrace();
