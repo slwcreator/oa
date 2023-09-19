@@ -72,6 +72,8 @@
                         axios.post("/api/login", params, {}).then(function (response) {
                             const json = response.data;
                             if ("0" === json.code) {
+                                sessionStorage.uid = json.data.user.userId;
+                                sessionStorage.eid = json.data.user.employeeId;
                                 window.location.href = "/index.html";
                             } else {
                                 $message.error({message: json.message, offset: 100});
