@@ -27,7 +27,23 @@
 <div id="app">
     <el-container style="height: 100%;border: 1px solid #eee">
         <el-header>
-            Header
+            <el-row>
+                <el-col :span="12">
+                    <span style="font-size: 18px;color: darkcyan">办公 OA 系统</span>
+                </el-col>
+                <el-col :span="12" style="text-align: right">
+                    <el-dropdown>
+                        <i class="el-icon-s-check" style="font-size: 18px;margin-right: 15px">
+                            <span style="margin-right: 15px">{{employee.name}}[{{employee.title}}]</span>
+                        </i>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item v-on:click="logout()">注销</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                </el-col>
+            </el-row>
         </el-header>
         <el-container>
             <el-aside width="200px" style="max-height: 100%;background-color: rgb(238,241,246)">
@@ -54,24 +70,32 @@
     const Main = {
         data() {
             return {
-                nodeList: []
+                nodeList: [],
+                employee: {}
             }
         },
         methods: {
             showPage(url) {
                 document.getElementById("main").src = url;
+            },
+            logout() {
+                sessionStorage.clear();
+                window.location.href = "/login.html";
             }
         },
         mounted() {
             const objApp = this;
+            const uid = sessionStorage.uid;
+            const eid = sessionStorage.eid;
 
-            axios.get("/api/user_info?uid=" + sessionStorage.uid)
+            axios.get("/api/user_info?uid=" + uid + "&eid=" + eid)
                 .then(function (response) {
                     const json = response.data;
                     console.info(json);
                     json.data.nodeList.forEach(function (item) {
                         objApp.nodeList.push(item);
                     })
+                    objApp.employee = json.data.employee;
                     console.info(objApp.nodeList);
                 })
         }
