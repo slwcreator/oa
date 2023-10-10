@@ -1,7 +1,9 @@
 package com.slwer.oa.controller;
 
+import com.slwer.oa.entity.Department;
 import com.slwer.oa.entity.Employee;
 import com.slwer.oa.entity.Node;
+import com.slwer.oa.service.DepartmentService;
 import com.slwer.oa.service.EmployeeService;
 import com.slwer.oa.service.RbacService;
 import com.slwer.oa.utils.ResponseUtils;
@@ -21,6 +23,7 @@ import java.util.Map;
 public class UserInfoServlet extends HttpServlet {
     private RbacService rbacService = new RbacService();
     private EmployeeService employeeService = new EmployeeService();
+    private DepartmentService departmentService = new DepartmentService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -42,7 +45,12 @@ public class UserInfoServlet extends HttpServlet {
         }
 
         Employee employee = employeeService.selectById(Long.parseLong(eid));
-        String json = new ResponseUtils().put("nodeList", treeList).put("employee", employee).toJsonString();
+        Department department = departmentService.selectById(employee.getDepartmentId());
+        String json = new ResponseUtils()
+                .put("nodeList", treeList)
+                .put("employee", employee)
+                .put("department", department)
+                .toJsonString();
         response.setContentType("application/json;charset=utf-8");
         response.getWriter().println(json);
     }
