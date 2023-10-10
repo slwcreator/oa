@@ -9,6 +9,8 @@ import com.slwer.oa.mapper.ProcessFlowMapper;
 import com.slwer.oa.utils.MyBatisUtils;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 public class LeaveFormService {
     private EmployeeService employeeService = new EmployeeService();
@@ -103,6 +105,21 @@ public class LeaveFormService {
                 processFlowMapper.insert(flow2);
             }
             return leaveForm;
+        });
+    }
+
+    /**
+     * 获取指定任务状态及指定经办人对应的请假单列表
+     *
+     * @param pfState    ProcessFlow任务状态
+     * @param operatorId 经办人编号
+     * @return 请假单及相关数据列表
+     */
+    public List<Map<String, Object>> getLeaveFormList(String pfState, Long operatorId) {
+        return (List<Map<String, Object>>) MyBatisUtils.executeQuery(sqlSession -> {
+            LeaveFormMapper mapper = sqlSession.getMapper(LeaveFormMapper.class);
+            List<Map<String, Object>> maps = mapper.selectByParams(pfState, operatorId);
+            return maps;
         });
     }
 }

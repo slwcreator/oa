@@ -7,6 +7,8 @@ import org.junit.Test;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -35,6 +37,16 @@ public class LeaveFormMapperTest {
             leaveForm.setState("processing");
             mapper.insert(leaveForm);
             return null;
+        });
+    }
+
+    @Test
+    public void selectByParams() {
+        MyBatisUtils.executeQuery(sqlSession -> {
+            LeaveFormMapper mapper = sqlSession.getMapper(LeaveFormMapper.class);
+            List<Map<String, Object>> list = mapper.selectByParams("process", 2L);
+            System.out.println(list);
+            return list;
         });
     }
 }
