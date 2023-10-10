@@ -7,4 +7,18 @@
     <select id="selectById" parameterType="Long" resultType="com.slwer.oa.entity.Employee">
         SELECT * FROM adm_employee WHERE employee_id = #{value}
     </select>
+
+    <select id="selectByParams" parameterType="java.util.Map" resultType="com.slwer.oa.entity.Employee">
+        select * from adm_employee
+        where 1=1
+        <if test="level != null">
+            and level = #{level}
+        </if>
+        <if test="departmentId != null">
+            and department_id = #{departmentId}
+        </if>
+        <if test="title != null">
+            and title = #{title}
+        </if>
+    </select>
 </mapper>
