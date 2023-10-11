@@ -6,11 +6,14 @@ import com.slwer.oa.entity.ProcessFlow;
 import com.slwer.oa.mapper.EmployeeMapper;
 import com.slwer.oa.mapper.LeaveFormMapper;
 import com.slwer.oa.mapper.ProcessFlowMapper;
+import com.slwer.oa.service.exception.LeaveFormException;
 import com.slwer.oa.utils.MyBatisUtils;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class LeaveFormService {
     private EmployeeService employeeService = new EmployeeService();
@@ -120,6 +123,66 @@ public class LeaveFormService {
             LeaveFormMapper mapper = sqlSession.getMapper(LeaveFormMapper.class);
             List<Map<String, Object>> maps = mapper.selectByParams(pfState, operatorId);
             return maps;
+        });
+    }
+
+    /**
+     * 审核请假单
+     *
+     * @param formId     表单编号
+     * @param operatorId 经办人(当前登录员工)
+     * @param result     审批结果
+     * @param reason     审批意见
+     */
+    public void audit(Long formId, Long operatorId, String result, String reason) {
+        MyBatisUtils.executeUpdate(sqlSession -> {
+            ProcessFlowMapper processFlowMapper = sqlSession.getMapper(ProcessFlowMapper.class);
+            List<ProcessFlow> flowList = processFlowMapper.selectByFormId(formId);
+            if (flowList.size() == 0) {
+                throw new LeaveFormException("无效的审批流程");
+            }
+            //获取当前任务 ProcessFlow 对象
+            List<ProcessFlow> processList = flowList.stream()
+                    .filter(p -> Objects.equals(p.getOperatorId(), operatorId) && p.getState().equals("process"))
+                    .collect(Collectors.toList());
+            ProcessFlow processFlow = null;
+            if (processList.size() == 0) {
+                throw new LeaveFormException("未找到待处理任务节点");
+            } else {
+                processFlow = processList.get(0);
+                processFlow.setState("complete");
+                processFlow.setResult(result);
+                processFlow.setReason(reason);
+                processFlow.setAuditTime(new Date());
+                processFlowMapper.update(processFlow);
+            }
+
+            LeaveFormMapper leaveFormMapper = sqlSession.getMapper(LeaveFormMapper.class);
+            LeaveForm leaveForm = leaveFormMapper.selectById(formId);
+            //如果当前任务是最后一个节点,代表流程结束,更新请假单状态为对应的approved/refused
+            if (processFlow.getIsLast() == 1) {
+                leaveForm.setState(result);
+                leaveFormMapper.update(leaveForm);
+            } else {
+                //readyList 包含所有后续任务节点
+                List<ProcessFlow> readyList = flowList.stream().filter(p -> p.getState().equals("ready"))
+                        .collect(Collectors.toList());
+                //如果当前任务不是最后一个节点且审批通过,那下一个节点的状态从ready变为process
+                if (result.equals("approved")) {
+                    ProcessFlow readyProcess = readyList.get(0);
+                    readyProcess.setState("process");
+                    processFlowMapper.update(readyProcess);
+                } else if (result.equals("refused")) {
+                    //如果当前任务不是最后一个节点且审批驳回,则后续所有任务状态变为 cancel,请假单状态变为 refused
+                    for (ProcessFlow p : readyList) {
+                        p.setState("cancel");
+                        processFlowMapper.update(p);
+                    }
+                    leaveForm.setState("refused");
+                    leaveFormMapper.update(leaveForm);
+                }
+            }
+            return null;
         });
     }
 }
