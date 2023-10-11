@@ -9,9 +9,9 @@
     <script src="/assets/vue/vue.global.js"></script>
     <script src="/assets/element-plus/index.full.js"></script>
     <script src="/assets/axios/axios.js"></script>
-    <style >
+    <style>
 
-        .info .el-col,.info .el-select ,.info .el-input{
+        .info .el-col, .info .el-select, .info .el-input {
             padding-top: 5px;
             padding-bottom: 5px;
         }
@@ -67,18 +67,18 @@
     </el-table>
 
     <el-dialog title="请假审批" v-model="dialogFormVisible" width="500px" center>
-        <el-descriptions  :column="2" border>
+        <el-descriptions :column="2" border>
             <el-descriptions-item label="部门">{{currentRow.department_name}}</el-descriptions-item>
             <el-descriptions-item label="姓名">{{currentRow.name}}</el-descriptions-item>
-            <el-descriptions-item label="起始时间" >{{currentRow.stime}}</el-descriptions-item>
-            <el-descriptions-item label="结束时间" >{{currentRow.etime}}</el-descriptions-item>
+            <el-descriptions-item label="起始时间">{{currentRow.stime}}</el-descriptions-item>
+            <el-descriptions-item label="结束时间">{{currentRow.etime}}</el-descriptions-item>
             <el-descriptions-item label="请假原因" :span="2">
                 {{currentRow.reason}}
             </el-descriptions-item>
         </el-descriptions>
 
 
-        <div class="info" >
+        <div class="info">
             <el-form :model="form" ref="auditForm">
                 <el-select v-model="form.result" placeholder="是否同意" style="width: 100%">
                     <el-option label="同意" value="approved"></el-option>
@@ -94,7 +94,7 @@
 </div>
 
 <script>
-    function formatDate(time){
+    function formatDate(time) {
         var newDate = new Date(time);
         return newDate.getFullYear() + "-" +
             (newDate.getMonth() + 1) + "-" + newDate.getDate()
@@ -106,28 +106,68 @@
             return {
                 dialogFormVisible: false,
                 form: {
-                    result:"approved",
-                    reason:""
+                    result: "approved",
+                    reason: ""
                 },
                 formLabelWidth: '120px',
                 tableData: [{
-                    ctime:"2021-5-29 18时",
-                    ftype:"事假",
-                    stime:"2021-5-31 0时",
-                    etime:"2021-6-3 0时",
-                    department_name:"研发部",
-                    name:"王美美",
-                    reason:"测试数据"
+                    ctime: "2021-5-29 18时",
+                    ftype: "事假",
+                    stime: "2021-5-31 0时",
+                    etime: "2021-6-3 0时",
+                    department_name: "研发部",
+                    name: "王美美",
+                    reason: "测试数据"
                 }],
                 currentRow: null
             }
         }
-        ,methods: {
+        , methods: {
             handleCurrentChange(val) {
                 this.currentRow = val;
                 console.info(val);
                 this.dialogFormVisible = true;
             }
+        }
+        , mounted() {
+            const objApp = this;
+            const $message = this.$message;
+            axios.get("/api/leave/list?eid=" + sessionStorage.eid)
+                .then(function (response) {
+                    const json = response.data;
+                    if (json.code === '0') {
+                        objApp.tableData.splice(0, objApp.tableData.length);
+                        const formList = json.data.list;
+                        formList.forEach(function (item) {
+                            switch (item.form_type) {
+                                case 1:
+                                    item.ftype = "事假";
+                                    break;
+                                case 2:
+                                    item.ftype = "病假";
+                                    break;
+                                case 3:
+                                    item.ftype = "工伤假";
+                                    break;
+                                case 4:
+                                    item.ftype = "婚假";
+                                    break;
+                                case 5:
+                                    item.ftype = "产假";
+                                    break;
+                                case 6:
+                                    item.ftype = "丧假";
+                                    break;
+                            }
+                            item.stime = formatDate(item.start_time);
+                            item.etime = formatDate(item.end_time);
+                            item.ctime = formatDate(item.create_time);
+                            objApp.tableData.push(item);
+                        })
+                    } else {
+                        $message.error({message: json.message, offset: 100})
+                    }
+                })
         }
     };
     const app = Vue.createApp(Main);
