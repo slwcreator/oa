@@ -38,7 +38,7 @@ public class LeaveFormServlet extends HttpServlet {
                 this.list(request, response);
                 break;
             case "audit":
-
+                this.audit(request, response);
                 break;
         }
     }
@@ -84,6 +84,22 @@ public class LeaveFormServlet extends HttpServlet {
                 }
             }
             resp = new ResponseUtils().put("list", formList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp = new ResponseUtils(e.getClass().getSimpleName(), e.getMessage());
+        }
+        response.getWriter().println(resp.toJsonString());
+    }
+
+    private void audit(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String formId = request.getParameter("formId");
+        String eid = request.getParameter("eid");
+        String result = request.getParameter("result");
+        String reason = request.getParameter("reason");
+        ResponseUtils resp = null;
+        try {
+            leaveFormService.audit(Long.parseLong(formId), Long.parseLong(eid), result, reason);
+            resp = new ResponseUtils();
         } catch (Exception e) {
             e.printStackTrace();
             resp = new ResponseUtils(e.getClass().getSimpleName(), e.getMessage());
