@@ -11,4 +11,8 @@ public interface LeaveFormMapper {
 
     List<Map<String, Object>> selectByParams(@Param("pf_state") String pfState
             , @Param("pf_operator_id") Long pfOperatorId);
+
+    void update(LeaveForm leaveForm);
+
+    LeaveForm selectById(Long formId);
 }
